@@ -1,8 +1,9 @@
 brain = require('brain');
 fs = require('fs');
+_ = require('lodash');
 
 var net = new brain.NeuralNetwork({
-   hiddenLayers: [10,2]
+   hiddenLayers: [10,10]
 });
 
 function reverse(s) {
@@ -35,10 +36,10 @@ test = digits.slice( half, digits.length )
 
 
 options = {
-  errorThresh: 0.0005,  // error threshold to reach
+  errorThresh: 0.00005,  // error threshold to reach
   iterations: 200000,   // maximum training iterations
   log: true,           // console.log() progress periodically
-  logPeriod: 200,       // number of iterations between logging
+  logPeriod: 500,       // number of iterations between logging
   learningRate: 0.3    // learning rate
 }
 
@@ -81,11 +82,19 @@ var seven = "1 1 1 1 1 1 1 1 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0
 var eight = "0 1 1 1 1 1 0 1 0 0 0 0 0 1 1 0 0 0 0 0 1 0 1 1 1 1 1 0 1 0 0 0 0 0 1 1 0 0 0 0 0 1 0 1 1 1 1 1 0".split(' ').map(Number);
 var nine = "0 1 1 1 1 1 0 1 0 0 0 0 0 1 1 0 0 0 0 0 1 0 1 1 1 1 1 1 0 0 0 0 0 0 1 1 0 0 0 0 0 1 0 1 1 1 1 1 0 9".split(' ').map(Number);
 
+tests = [];
+tests.push( six );
+tests.push( seven );
+tests.push( eight );
+tests.push( nine );
 
-console.log( "6", net.run(six) );
-console.log( "7", net.run(seven) );
-console.log( "8", net.run(eight) );
-console.log( "9", net.run(nine) );
+for( var i in tests ){
+  var x = net.run(tests[i]);
+  var m = _.max(x);
+
+  console.log( 5+i, ' -- ', _.invert(x)[m], ' likelyhood: ', m );
+}
+
 
 return(0);
 
