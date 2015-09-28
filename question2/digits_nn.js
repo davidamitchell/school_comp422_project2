@@ -14,6 +14,7 @@ var test  = [];
 var train = [];
 
 var filename = 'data/digits00';
+var filename = 'data/digits60';
 
 var digits = fs.readFileSync(filename).toString().split("\n");
 digits.pop();
@@ -36,8 +37,8 @@ test = digits.slice( half, digits.length )
 
 
 options = {
-  errorThresh: 0.00005,  // error threshold to reach
-  iterations: 200000,   // maximum training iterations
+  errorThresh: 0.005,  // error threshold to reach
+  iterations: 20000,   // maximum training iterations
   log: true,           // console.log() progress periodically
   logPeriod: 500,       // number of iterations between logging
   learningRate: 0.3    // learning rate
@@ -92,7 +93,7 @@ for( var i in tests ){
   var x = net.run(tests[i]);
   var m = _.max(x);
 
-  console.log( 5+i, ' -- ', _.invert(x)[m], ' likelyhood: ', m );
+  console.log( 5+i, ' -- ', _.invert(x)[m], ' likelyhood: ', m, x );
 }
 
 
