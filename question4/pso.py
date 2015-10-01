@@ -59,7 +59,7 @@ def main():
 
     final_pop = ea.evolve(generator = generator,
                           evaluator = rosenbrock_evaluation,
-                          bounder = inspyred.ec.Bounder(-30, 30),
+                          bounder = inspyred.ec.Bounder(-3, 3),
                           pop_size=100,
                           maximize=False,
                           max_evaluations=30000,
