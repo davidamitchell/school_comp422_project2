@@ -40,7 +40,7 @@ def griewank_evaluation(candidates, args):
     return fitness
 
 def generator(random, args):
-    dim = 20
+    dim = 5
     return [ random.uniform(-30., 30.) for _ in range(dim) ]
 
 from time import time
@@ -57,13 +57,20 @@ def main():
     # ea.topology = inspyred.swarm.topologies.ring_topology
     ea.topology = inspyred.swarm.topologies.star_topology
 
-    final_pop = ea.evolve(generator = generator,
-                          evaluator = rosenbrock_evaluation,
-                          bounder = inspyred.ec.Bounder(-3, 3),
-                          pop_size=100,
-                          maximize=False,
-                          max_evaluations=30000,
-                          neighborhood_size=5)
+    #
+    # inertia - the inertia constant to be used in the particle updating (default 0.5)
+    # cognitive_rate - the rate at which the particles current position influences its movement (default 2.1)
+    # social_rate - the rate at which the particles neighbors influence its movement (default 2.1)
+
+    final_pop = ea.evolve(generator         = generator,
+                          evaluator         = rosenbrock_evaluation,
+                          bounder           = inspyred.ec.Bounder(-30, 30),
+                          pop_size          = 200,
+                          maximize          = False,
+                          max_evaluations   = 90000,
+                          neighborhood_size = 10,
+                          congnitive_rate   = 2.0,
+                          social_rate       = 0.5)
 
 
     best = max(final_pop)
