@@ -53,9 +53,13 @@ def main():
 
     ea = inspyred.swarm.PSO(prng)
 
+    stats_observer = inspyred.ec.observers.stats_observer
+    stats_observer.num_generations = 10
+
     ea.terminator = inspyred.ec.terminators.evaluation_termination
     # ea.topology = inspyred.swarm.topologies.ring_topology
     ea.topology = inspyred.swarm.topologies.star_topology
+    ea.observer = stats_observer
 
     #
     # inertia - the inertia constant to be used in the particle updating (default 0.5)
@@ -69,12 +73,17 @@ def main():
                           maximize          = False,
                           max_evaluations   = 90000,
                           neighborhood_size = 10,
-                          congnitive_rate   = 2.0,
-                          social_rate       = 0.5)
+                          congnitive_rate   = 0.5,
+                          social_rate       = 2.5)
+    #
+    # inspyred.ec.observers.stats_observer(population, num_generations, num_evaluations, args)
+    # inspyred.ec.observers.file_observer(population, num_generations, num_evaluations, args)
 
 
     best = max(final_pop)
     print('Best Solution: \n{0}'.format(str(best)))
+
+    inspyred.ec.analysis.generation_plot("output.png", errorbars=False)
 
 if __name__ == '__main__':
     main()
