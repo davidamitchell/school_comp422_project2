@@ -22,6 +22,7 @@ def safe_div(a,b):
 
     with np.errstate(divide='ignore', invalid='ignore'):
         r = np.true_divide(a,b)
+        print r, a, b
         r[r == np.inf] = 0
         r = np.nan_to_num(r)
 
@@ -37,11 +38,11 @@ def cond(a, b, c):
 # need to think about how to put a
 # conditional in here?
 
-def gp_neg(a):      return gp_sub(0.,a)
+# def gp_neg(a):      return gp_sub(0.,a)
 def gp_add(a, b):   return a+b
-def gp_sub(a, b):   return a-b
+# def gp_sub(a, b):   return a-b
 def gp_mul(a, b):   return a*b
-def gp_div(a, b):   return safe_div(a, b)
+# def gp_div(a, b):   return safe_div(a, b)
 
 
 X_all, y = load_data('data/balance.data')
@@ -62,14 +63,14 @@ def eval_func(chromosome):
     code_comp = chromosome.getCompiledCode()
     score = eval(code_comp)
 
-    return np.mean(score**2)
+    return (2 - np.mean(score))**2
 
 genome = GTree.GTreeGP()
-genome.setParams(max_depth=2, method="ramped",tournamentPool=10)
+genome.setParams(max_depth=4, method="ramped",tournamentPool=10)
 genome.evaluator.set(eval_func)
 
 ga = GSimpleGA.GSimpleGA(genome)
-ga.setParams(gp_terminals       = ["f1()", "f2()", "f3()", "f4()"],
+ga.setParams(gp_terminals       = ["f1()", "f2()", "f3()", "f4()", "ephemeral:random.random()"],
 
 # ga.setParams(gp_terminals       = ['a', 'b'],
              gp_function_prefix = "gp")
@@ -79,7 +80,7 @@ ga.setGenerations(50)
 ga.terminationCriteria.set(GSimpleGA.ConvergenceCriteria)
 ga.setCrossoverRate(0.9)
 ga.setMutationRate(0.25)
-ga.setPopulationSize(10)
+ga.setPopulationSize(100)
 
 ga(freq_stats=10)
 best = ga.bestIndividual()
