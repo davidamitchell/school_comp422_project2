@@ -24,6 +24,7 @@ def rosenbrock_evaluation(candidates, args):
 def griewank(D):
     sum = 0.
     product = 1.
+    result = 0.
 
     for i, xi in enumerate(D):
 
@@ -32,6 +33,8 @@ def griewank(D):
 
         result =  ( sum / 4000. ) - product + 1.
 
+    return result
+
 def griewank_evaluation(candidates, args):
     fitness = []
     for c in candidates:
@@ -39,27 +42,80 @@ def griewank_evaluation(candidates, args):
 
     return fitness
 
+# def griewank_evaluation(candidates, args):
+#     fitness = []
+#     for c in candidates:
+#         prod = 1
+#         for i, x in enumerate(c):
+#             prod *= math.cos(x / math.sqrt(i+1))
+#         fitness.append(1.0 / 4000.0 * sum([x**2 for x in c]) - prod + 1)
+#     return fitness
+
 def generator(random, args):
-    dim = 5
+    dim = 20
     return [ random.uniform(-30., 30.) for _ in range(dim) ]
 
 from time import time
-from random import Random
+import random
+import sys
 import inspyred
 
-def main():
-    prng = Random()
-    prng.seed(time())
+
+SEED = random.randint(0, sys.maxint)
+
+def griewank_run():
+    prng = random.Random()
+    prng.seed(SEED)
+    # prng.seed(3592626484087809527)
 
     ea = inspyred.swarm.PSO(prng)
 
     stats_observer = inspyred.ec.observers.stats_observer
-    stats_observer.num_generations = 10
+    stats_observer.num_generations = 100
+
+    ea.terminator = inspyred.ec.terminators.evaluation_termination
+    ea.topology = inspyred.swarm.topologies.ring_topology
+    # ea.topology = inspyred.swarm.topologies.star_topology
+    # ea.observer = stats_observer
+
+    #
+    # inertia - the inertia constant to be used in the particle updating (default 0.5)
+    # cognitive_rate - the rate at which the particles current position influences its movement (default 2.1)
+    # social_rate - the rate at which the particles neighbors influence its movement (default 2.1)
+
+    final_pop = ea.evolve(generator         = generator,
+                          evaluator         = griewank_evaluation,
+                          bounder           = inspyred.ec.Bounder(-30, 30),
+                          pop_size          = 100,
+                          maximize          = False,
+                          max_evaluations   = 10000,
+                          neighborhood_size = 10,
+                          congnitive_rate   = 0.2,
+                          social_rate       = 1.0)
+    #
+    # inspyred.ec.observers.stats_observer(population, num_generations, num_evaluations, args)
+    # inspyred.ec.observers.file_observer(population, num_generations, num_evaluations, args)
+
+
+    best = max(final_pop)
+    print('Best Solution griewank: \n{0}'.format(str(best)))
+
+    # inspyred.ec.analysis.generation_plot("output.png", errorbars=False)
+
+def rosenbrock_run():
+    prng = random.Random()
+    prng.seed(SEED)
+    # prng.seed(880295265843339639)
+
+    ea = inspyred.swarm.PSO(prng)
+
+    # stats_observer = inspyred.ec.observers.stats_observer
+    # stats_observer.num_generations = 10000
 
     ea.terminator = inspyred.ec.terminators.evaluation_termination
     # ea.topology = inspyred.swarm.topologies.ring_topology
     ea.topology = inspyred.swarm.topologies.star_topology
-    ea.observer = stats_observer
+    # ea.observer = stats_observer
 
     #
     # inertia - the inertia constant to be used in the particle updating (default 0.5)
@@ -71,19 +127,24 @@ def main():
                           bounder           = inspyred.ec.Bounder(-30, 30),
                           pop_size          = 200,
                           maximize          = False,
-                          max_evaluations   = 90000,
-                          neighborhood_size = 10,
-                          congnitive_rate   = 0.5,
-                          social_rate       = 2.5)
+                          max_evaluations   = 10000,
+                        #   neighborhood_size = 10,
+                          congnitive_rate   = 1.0,
+                          social_rate       = 1.0)
     #
     # inspyred.ec.observers.stats_observer(population, num_generations, num_evaluations, args)
     # inspyred.ec.observers.file_observer(population, num_generations, num_evaluations, args)
 
 
     best = max(final_pop)
-    print('Best Solution: \n{0}'.format(str(best)))
+    print('Best Solution rosenbrock: \n{0}'.format(str(best)))
 
-    inspyred.ec.analysis.generation_plot("output.png", errorbars=False)
+    # inspyred.ec.analysis.generation_plot("output.png", errorbars=False)
+
+def main():
+    print "seed: ", SEED
+    # griewank_run()
+    rosenbrock_run()
 
 if __name__ == '__main__':
     main()

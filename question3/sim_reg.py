@@ -1,7 +1,5 @@
-from pyevolve import Util
-from pyevolve import GTree
-from pyevolve import GSimpleGA
-from pyevolve import Consts
+from pyevolve import *
+
 import numpy as np
 import math
 import pylab
@@ -56,8 +54,9 @@ def greater(a, b):
 
 def gp_add(a, b): return a+b
 def gp_sub(a, b): return a-b
-def gp_neg(a):    return 0 - a
 # def gp_mul(a, b): return a*b
+# def gp_div(a, b): return safe_div(a, b)
+def gp_neg(a):    return 0 - a
 # def gp_gt(a, b):  return a<b
 # def gp_lt(a, b):  return a<b
 # def gp_or(a, b):  return a or b
@@ -84,7 +83,8 @@ def eval_func(chromosome):
     score = 0.0
 
     code_comp = chromosome.getCompiledCode()
-    values    = np.random.uniform(-5, 10, size=100)
+    # values    =  (-5 - 20) * np.random.random_sample((500)) + 20
+    values    = np.random.uniform(-10, 10, size=100)
     expected  = 0.0
     results   = np.array([])
 
@@ -92,12 +92,12 @@ def eval_func(chromosome):
         a = b = val
         evaluated = eval(code_comp)
         expected = regression_function(a)
-        results = np.append(results, (evaluated-expected) )
+        results = np.append(results, abs(evaluated-expected) )
 
-    mse = np.mean(abs(results))
+    mse = np.mean(results)
 
     height = chromosome.getHeight()
-    # score = ( height * 0.02 ) + ( mse )
+    # score = ( height * 0.2 ) + ( mse )
     score = mse
 
     return score
@@ -105,49 +105,55 @@ def eval_func(chromosome):
 def main_run():
     genome = GTree.GTreeGP()
     print genome.getParam('tournamentPool')
-    genome.setParams(max_depth=4, method="ramped",tournamentPool=10)
-    genome.evaluator += eval_func
+    genome.setParams(max_depth=4, method="ramped")
+    genome.mutator.set(Mutators.GTreeGPMutatorSubtree)
+    genome.crossover.set(Crossovers.GTreeGPCrossoverSinglePoint)
+    genome.evaluator.set(eval_func)
 
     ga = GSimpleGA.GSimpleGA(genome)
     ga.setParams(gp_terminals       = ['a', 'b'],
                  gp_function_prefix = "gp")
 
     ga.setMinimax(Consts.minimaxType["minimize"])
-    ga.setGenerations(300)
+    ga.setGenerations(500)
     ga.terminationCriteria.set(GSimpleGA.ConvergenceCriteria)
-    ga.setCrossoverRate(1.0)
-    ga.setMutationRate(0.50)
+    # ga.selector.set(Selectors.GRouletteWheel)
+    # print "selector ", ga.selector
+    ga.setGPMode(True)
+    ga.setCrossoverRate(0.9)
+    ga.setMutationRate(0.25)
     ga.setPopulationSize(100)
 
-    ga(freq_stats=50)
-    best = ga.bestIndividual()
-    print best
-    print "crazy regression function"
-
-    code_comp = best.getCompiledCode()
+    ga(freq_stats=100)
 
 
-    values   = np.linspace(-5,20,500)
-
-    results   = np.array([])
-
-    for i, val in enumerate(values):
-        a = b = val
-        evaluated = eval(code_comp)
-        expected = regression_function(a)
-        results = np.append(results, (evaluated-expected) )
-
-
-    mse = np.mean(results**2)
-    print mse
-
-    # plot
-    x = np.linspace(-5,20,500)
+    colours = ['r','b','m','c','y']
+    x = np.linspace(-10,10,100)
     y = eval_all(x)
-    z = eval_gp(x, code_comp)
-    pylab.plot(x,y)
-    pylab.plot(x,z,'c')
-    pylab.show()
+    pylab.plot(x,y,'g',linewidth=2.0)
+
+    pop = ga.getPopulation()
+    for c, ind in enumerate(pop[:5]):
+
+        code_comp = ind.getCompiledCode()
+        results   = np.array([])
+        evaluated = 0.
+        expected  = 0.
+
+        for val in x:
+            a = b = val
+            evaluated = eval(code_comp)
+            expected = regression_function(a)
+            results = np.append(results, abs(evaluated-expected) )
+
+
+        print "expression: ", ind.getPreOrderExpression(), " score: ", ind.getFitnessScore(), "average error: ", np.mean(results)
+
+        # plot
+        z = eval_gp(x, code_comp)
+        pylab.plot(x,z,colours[c] ,linewidth=2.0)
+
+    # pylab.show()
 
 
 

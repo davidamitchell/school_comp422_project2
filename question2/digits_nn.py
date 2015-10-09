@@ -38,8 +38,9 @@ def convolution(filename):
 
     nn = Classifier(
         layers=[
-            Convolution("Rectifier", channels=20, kernel_shape=(3,3)),
-            Layer("Tanh", units=20),
+            Convolution("Rectifier", channels=5, kernel_shape=(3,3)),
+            # Convolution("Rectifier", channels=5, kernel_shape=(3,3)),
+            # Layer("Tanh", units=10),
             Layer("Softmax")],
         learning_rate=0.002,
         n_iter=50,
@@ -89,8 +90,8 @@ def run(filename):
     print ''
     print filename
     print "="*80
-    neighbor(filename)
-    standard(filename)
+    # neighbor(filename)
+    # standard(filename)
     convolution(filename)
 
 
