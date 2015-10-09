@@ -57,12 +57,12 @@ def convolution(X, y):
     X_train, X_test, y_train, y_test = split_test(X, y)
     nn = Classifier(
         layers=[
-            Convolution('Rectifier', channels=5, kernel_shape=(3, 3), border_mode='full'),
+            # Convolution('Rectifier', channels=8, kernel_shape=(3, 3), border_mode='full'),
             # Convolution('Rectifier', channels=5, kernel_shape=(3, 3), border_mode='full'),
-            # Convolution('Rectifier', channels=8, kernel_shape=(3, 3), border_mode='valid'),
-            # Layer('Rectifier', units=64),
+            Convolution('Rectifier', channels=8, kernel_shape=(3, 3), border_mode='valid'),
+            Layer('Rectifier', units=64),
             Layer('Softmax')],
-        learning_rate=0.002,
+        learning_rate=0.01,
         valid_size=0.2,
         n_stable=10,
         verbose=False,
@@ -83,10 +83,16 @@ def run(filename):
     X, y = load_data(filename)
     scores = np.array([])
 
-    for i in range(30):
-        train_score, test_score = convolution(X, y)
-        scores = np.append(scores, test_score)
-        print('training score', train_score, 'testing score', test_score)
+
+
+    try:
+        for i in range(30):
+            train_score, test_score = convolution(X, y)
+            scores = np.append(scores, test_score)
+            print('training score', train_score, 'testing score', test_score)
+
+    except KeyboardInterrupt:
+        pass
 
     print('mean: ', np.mean(scores), ' std: ', np.std(scores))
 
@@ -95,7 +101,7 @@ def run(filename):
 
 # run('data/digits00')
 run('data/digits15')
-run('data/digits30')
+# run('data/digits30')
 run('data/digits60')
 
 #

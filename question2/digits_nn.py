@@ -95,10 +95,10 @@ def run(filename):
     convolution(filename)
 
 
-run('data/digits00')
-run('data/digits15')
+# run('data/digits00')
+# run('data/digits15')
 run('data/digits30')
-run('data/digits60')
+# run('data/digits60')
 
 
 
