@@ -96,8 +96,8 @@ def run(filename):
 
 
 run('data/digits00')
-run('data/digits05')
-run('data/digits40')
+run('data/digits15')
+run('data/digits30')
 run('data/digits60')
 
 

@@ -1,0 +1,75 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+CROSSOVER_RATE	sim_reg_deap.py	/^CROSSOVER_RATE  = 0.90$/;"	variable	line:58
+MAX_DEPTH	sim_reg_deap.py	/^MAX_DEPTH       = 4$/;"	variable	line:53
+MAX_GENERATIONS	sim_reg_deap.py	/^MAX_GENERATIONS = 500$/;"	variable	line:54
+MUTATION_RATE	sim_reg_deap.py	/^MUTATION_RATE   = 0.50$/;"	variable	line:57
+POPULATION_SIZE	sim_reg_deap.py	/^POPULATION_SIZE = 200$/;"	variable	line:55
+SEED	sim_reg_deap.py	/^SEED = random.randint(0, sys.maxint)$/;"	variable	line:51
+TOURNAMENT_SIZE	sim_reg_deap.py	/^TOURNAMENT_SIZE = 5$/;"	variable	line:60
+X	sim_reg_deap.py	/^X = np.linspace(-20,20,500)$/;"	variable	line:157
+Y	sim_reg_deap.py	/^Y = eval_all(X)$/;"	variable	line:158
+Z	sim_reg_deap.py	/^    Z = eval_gp(X, func)$/;"	variable	line:185
+algorithms	sim_reg_deap.py	/^from deap import algorithms$/;"	namespace	line:12
+base	sim_reg_deap.py	/^from deap import base$/;"	namespace	line:13
+colours	sim_reg_deap.py	/^colours = ['r','b','m','c','y']$/;"	variable	line:156
+creator	sim_reg_deap.py	/^from deap import creator$/;"	namespace	line:14
+eval_all	sim_reg.py	/^def eval_all(x):$/;"	function	line:16
+eval_all	sim_reg_deap.py	/^def eval_all(x):$/;"	function	line:104
+eval_func	sim_reg.py	/^def eval_func(chromosome):$/;"	function	line:82
+eval_gp	sim_reg.py	/^def eval_gp(x, code_comp):$/;"	function	line:8
+eval_gp	sim_reg_deap.py	/^def eval_gp(X, func):$/;"	function	line:97
+evaluate_individual	sim_reg_deap.py	/^def evaluate_individual(individual, points):$/;"	function	line:120
+evaluated	sim_reg_deap.py	/^        evaluated = func(x)$/;"	variable	line:171
+evaluated	sim_reg_deap.py	/^    evaluated = 0.$/;"	variable	line:167
+expected	sim_reg_deap.py	/^        expected = regression_function(x)$/;"	variable	line:172
+expected	sim_reg_deap.py	/^    expected  = 0.$/;"	variable	line:168
+func	sim_reg_deap.py	/^    func = toolbox.compile(expr=ind)$/;"	variable	line:164
+function_set	sim_reg_deap.py	/^function_set    = np.array([])$/;"	variable	line:64
+g	sim_reg_deap.py	/^g = pgv.AGraph()$/;"	variable	line:199
+gp	sim_reg_deap.py	/^from deap import gp$/;"	namespace	line:16
+gp_add	sim_reg.py	/^def gp_add(a, b): return a+b$/;"	function	line:55
+gp_eq	sim_reg.py	/^def gp_eq(a, b):  return a == b$/;"	function	line:64
+gp_exp	sim_reg.py	/^def gp_exp(a):    return safe_exp(a)$/;"	function	line:68
+gp_neg	sim_reg.py	/^def gp_neg(a):    return 0 - a$/;"	function	line:59
+gp_sqrt	sim_reg.py	/^def gp_sqrt(a):   return math.sqrt(abs(a))$/;"	function	line:67
+gp_sub	sim_reg.py	/^def gp_sub(a, b): return a-b$/;"	function	line:56
+greater	sim_reg.py	/^def greater(a, b):$/;"	function	line:46
+hof	sim_reg_deap.py	/^hof = tools.HallOfFame(3)$/;"	variable	line:139
+main_run	sim_reg.py	/^def main_run():$/;"	function	line:105
+math	sim_reg.py	/^import math$/;"	namespace	line:4
+math	sim_reg_deap.py	/^import math$/;"	namespace	line:6
+mse	sim_reg_deap.py	/^    mse = np.mean(results)$/;"	variable	line:177
+mstats	sim_reg_deap.py	/^mstats = tools.MultiStatistics(fitness=stats_fit, size=stats_size)$/;"	variable	line:143
+n	sim_reg_deap.py	/^    n = g.get_node(i)$/;"	variable	line:205
+np	sim_reg.py	/^import numpy as np$/;"	namespace	line:3
+np	sim_reg_deap.py	/^import numpy as np$/;"	namespace	line:9
+operator	sim_reg_deap.py	/^import operator$/;"	namespace	line:5
+pgv	sim_reg_deap.py	/^import pygraphviz as pgv$/;"	namespace	line:197
+pop	sim_reg_deap.py	/^pop = toolbox.population(n=POPULATION_SIZE)$/;"	variable	line:138
+pset	sim_reg_deap.py	/^pset = gp.PrimitiveSet("MAIN", 1)$/;"	variable	line:36
+pylab	sim_reg.py	/^import pylab$/;"	namespace	line:5
+pylab	sim_reg_deap.py	/^import pylab$/;"	namespace	line:10
+random	sim_reg_deap.py	/^import random$/;"	namespace	line:7
+regression_function	sim_reg.py	/^def regression_function(a):$/;"	function	line:73
+regression_function	sim_reg_deap.py	/^def regression_function(a):$/;"	function	line:111
+results	sim_reg_deap.py	/^        results = np.append(results, (evaluated-expected)**2 )$/;"	variable	line:174
+results	sim_reg_deap.py	/^    results   = np.array([])$/;"	variable	line:166
+safe_div	sim_reg.py	/^def safe_div(a,b):$/;"	function	line:31
+safe_div	sim_reg_deap.py	/^def safe_div(a,b):$/;"	function	line:19
+safe_exp	sim_reg.py	/^def safe_exp(a):$/;"	function	line:38
+safe_exp	sim_reg_deap.py	/^def safe_exp(a):$/;"	function	line:26
+safe_ln	sim_reg.py	/^def safe_ln(a):$/;"	function	line:24
+safe_sqrt	sim_reg_deap.py	/^def safe_sqrt(a):$/;"	function	line:33
+stats	sim_reg_deap.py	/^                               stats=mstats,$/;"	variable	line:150
+stats_fit	sim_reg_deap.py	/^stats_fit = tools.Statistics(lambda ind: ind.fitness.values)$/;"	variable	line:141
+stats_size	sim_reg_deap.py	/^stats_size = tools.Statistics(len)$/;"	variable	line:142
+summary	sim_reg_deap.py	/^summary = ""$/;"	variable	line:69
+sys	sim_reg_deap.py	/^import sys$/;"	namespace	line:8
+terminal_set	sim_reg_deap.py	/^terminal_set    = np.linspace(-20,20,100)$/;"	variable	line:63
+toolbox	sim_reg_deap.py	/^toolbox = base.Toolbox()$/;"	variable	line:89
+tools	sim_reg_deap.py	/^from deap import tools$/;"	namespace	line:15
