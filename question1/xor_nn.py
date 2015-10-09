@@ -25,18 +25,19 @@ def load_test():
 
 def standard():
 
-    X_train, y_train = load_data()
+    X_train, y_train = load_test()
     X_test, y_test = load_test()
 
     nn = Classifier(
         layers=[
             Layer("Tanh", units=2),
+            Layer("Rectifier", units=2),
             Layer("Softmax")],
         learning_rate=0.2,
-        # n_iter=10000,
-        n_stable=200,
-        f_stable=0.001,
-        valid_size=0.25,
+        n_iter=500,
+        # n_stable=200,
+        # f_stable=0.001,
+        # valid_size=0.25,
         verbose=True,
         debug=True
         )
