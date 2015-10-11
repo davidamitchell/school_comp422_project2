@@ -4,6 +4,7 @@ from __future__ import (absolute_import, unicode_literals, print_function)
 from sklearn import datasets, cross_validation
 from sknn.mlp import Classifier, Layer, Convolution
 
+from sklearn.metrics import roc_auc_score
 
 import sys
 import logging
@@ -60,10 +61,12 @@ def convolution(X, y):
             # Convolution('Rectifier', channels=8, kernel_shape=(3, 3), border_mode='full'),
             # Convolution('Rectifier', channels=5, kernel_shape=(3, 3), border_mode='full'),
             Convolution('Rectifier', channels=8, kernel_shape=(3, 3), border_mode='valid'),
-            Layer('Rectifier', units=64),
+            # Layer('Rectifier', units=64),
+            Layer("Maxout", units=64, pieces=2),
+            # Layer("Tanh", units=10),
             Layer('Softmax')],
-        learning_rate=0.01,
-        valid_size=0.2,
+        learning_rate=0.02,
+        valid_size=0.01,
         n_stable=10,
         verbose=False,
         debug=False)
@@ -72,8 +75,12 @@ def convolution(X, y):
 
     train_score = nn.score(X_train, y_train)
     test_score = nn.score(X_test, y_test)
+    probablities = nn.predict_proba(X_test)
+    print(probablities)
+    print(y_test)
+    roc_auc = roc_auc_score(y_test, probablities)
 
-    return train_score, test_score
+    return train_score, test_score, roc_auc
 
 
 def run(filename):
@@ -83,13 +90,12 @@ def run(filename):
     X, y = load_data(filename)
     scores = np.array([])
 
-
-
     try:
         for i in range(30):
-            train_score, test_score = convolution(X, y)
+            train_score, test_score, roc_auc = convolution(X, y)
             scores = np.append(scores, test_score)
-            print('training score', train_score, 'testing score', test_score)
+
+            print('training score ', train_score, ' testing score', test_score, ' roc_auc: ', roc_auc)
 
     except KeyboardInterrupt:
         pass
@@ -102,7 +108,7 @@ def run(filename):
 # run('data/digits00')
 run('data/digits15')
 # run('data/digits30')
-run('data/digits60')
+# run('data/digits60')
 
 #
 # y_pred = nn.predict(X_test)

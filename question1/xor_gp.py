@@ -1,82 +1,220 @@
-from pyevolve import Util
-from pyevolve import GTree
-from pyevolve import GSimpleGA
-from pyevolve import Consts
+print ""
+
+import operator
 import math
+import random
+import sys
+import numpy as np
+import pylab
 
-rmse_accum = Util.ErrorAccumulator()
+from deap import algorithms
+from deap import base
+from deap import creator
+from deap import tools
+from deap import gp
 
-# def gp_add(a, b): return a+b
-# def gp_sub(a, b): return a-b
-# def gp_mul(a, b): return a*b
-# def gp_sqrt(a):   return math.sqrt(abs(a))
-def gp_or(a, b):  return a or b
-def gp_and(a, b): return a and b
-def gp_eq(a, b):  return a == b
-def gp_not(a):    return not a
+import pygraphviz as pgv
 
+def xor_func(a, b):
+    return int( operator.xor( bool(a), bool(b) ) )
 
-def eval_func(chromosome):
-    score = 0.0
+def evaluate_individual(individual, points):
+    score = 0.
+    # get a callable function
+    func = toolbox.compile(expr=individual)
 
-    code_comp = chromosome.getCompiledCode()
+    # find the squared errors
 
-    values   = [ [1,1], [1,0], [0,0], [0,1]]
-    expected = [ False, True,  False, True ]
-    results  = []
-    for i in values:
-        a, b = i
-        evaluated = eval(code_comp)
-        results.append( evaluated )
+    results = np.array([])
+    for (a, b) in points:
+        evaluated = func(a, b)
+        expected = xor_func(a, b)
+        results = np.append(results, abs(evaluated-expected) )
 
-    correct = len([x for x,val in enumerate(expected) if val == results[x]])
-    height = chromosome.getHeight()
-    score = ( height * 0.2 ) + ( len(values) - correct )
+    mae = np.mean(results)
 
-    return score
+    node_count = len(individual)
 
-def main_run():
-    genome = GTree.GTreeGP()
-    genome.setParams(max_depth=4, method="ramped")
-    genome.evaluator += eval_func
+    score = mae
+    score = ( node_count * 0.05 ) + mae
 
-    ga = GSimpleGA.GSimpleGA(genome)
-    ga.setParams(gp_terminals       = ['a', 'b'],
-                 gp_function_prefix = "gp")
+    return score,
 
-    ga.setMinimax(Consts.minimaxType["minimize"])
-    # ga.setGenerations(100)
-    ga.terminationCriteria.set(GSimpleGA.ConvergenceCriteria)
-    ga.setCrossoverRate(1.0)
-    ga.setMutationRate(0.25)
-    ga.setPopulationSize(100)
+def write_graph(ind, filename):
 
-    ga(freq_stats=10)
-    best = ga.bestIndividual()
-    print best
-    print "xor(a, b)"
+    nodes, edges, labels = gp.graph(ind)
 
-    global rmse_accum
-    rmse_accum.reset()
-    code_comp = best.getCompiledCode()
+    g = pgv.AGraph()
+    g.add_nodes_from(nodes)
+    g.add_edges_from(edges)
+    g.layout(prog="dot")
 
-    values   = [ [1,1], [1,0], [0,0], [0,1]]
-    expected = [ False, True,  False, True ]
+    for i in nodes:
+        n = g.get_node(i)
+        n.attr["label"] = labels[i]
 
+    g.draw(filename)
 
-    for i, val in enumerate(values):
-        a, b = val
-        evaluated = eval(code_comp)
-        target = expected[i]
+def get_pset_string(pset):
+    function_set  = np.array([])
+    for k,v in pset.primitives.items():
+      for value in v:
+          function_set = np.append(function_set, value.format('a','b'))
 
-        print("target: %-3.5f evaluated: %-3.5f" % (target, evaluated) ) ,
-        print "\ta: ", a, " b: ", b, "  "
+    return str( np.array2string(function_set, max_line_width=np.inf) )
 
 
+def print_summary(hof, toolbox, summary):
+
+    for c, ind in enumerate(hof):
+
+        func = toolbox.compile(expr=ind)
+
+        results   = np.array([])
+        evaluated = 0.
+        expected  = 0.
+
+        for (a, b) in terminal_set:
+            evaluated = func(a, b)
+            expected = xor_func(a, b)
+            # print "evaluated: ", evaluated, " expected ", expected, " x ", x
+            results = np.append(results, (evaluated-expected)**2 )
+
+        # print results
+        mse = np.mean(results)
+        print "expression: ", ind, "mean squared error: ", mse
+
+        if c == 0:
+            summary += "\nBest MSE: " + str(mse)
+            summary += "\n "
+
+
+    print summary
+
+    print ""
 
 
 
+SEED = random.randint(0, sys.maxint)
+# SEED = 540263078815542890
+
+MAX_DEPTH       = 4
+MAX_GENERATIONS = 100
+POPULATION_SIZE = 50
+
+MUTATION_RATE   = 0.25
+CROSSOVER_RATE  = 0.90
+
+TOURNAMENT_SIZE = 3
+
+terminal_set    = np.array( [ [1,1], [1,0], [0,0], [0,1] ] )
 
 
-if __name__ == "__main__":
-    main_run()
+# summary += "\nTerminal Set: ", str( terminal_set.tolist() )
+
+summary = ""
+summary += "\nPopulation Size: " + str(POPULATION_SIZE)
+summary += "   Max Generations: " + str(MAX_GENERATIONS)
+summary += "   Max Depth: " + str(MAX_DEPTH)
+
+summary += "\nMutation Rate: " + str(MUTATION_RATE)
+summary += "   Crossover Rate: " + str(CROSSOVER_RATE)
+summary += "   Tournament Size: " + str(TOURNAMENT_SIZE)
+summary += "   Seed: " + str(SEED)
+# function_set
+
+# ##########################################################################################################################################
+# ##########################################################################################################################################
+# ##########################################################################################################################################
+
+pset_logic = gp.PrimitiveSet("Logic", 2)
+pset_logic.addPrimitive(operator.or_, 2)
+pset_logic.addPrimitive(operator.not_, 1)
+pset_logic.addPrimitive(operator.and_, 2)
+pset_logic.addPrimitive(operator.eq, 2)
+pset_logic.addPrimitive(operator.ne, 2)
+pset_logic.renameArguments(ARG0='a')
+pset_logic.renameArguments(ARG1='b')
+
+# ########################################
+
+pset = pset_logic
+creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
+
+toolbox = base.Toolbox()
+toolbox.register("expr", gp.genHalfAndHalf, pset=pset, min_=1, max_=2)
+toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+toolbox.register("compile", gp.compile, pset=pset)
+
+
+toolbox.register("evaluate", evaluate_individual, points = terminal_set)
+toolbox.register("select", tools.selTournament, tournsize = TOURNAMENT_SIZE)
+toolbox.register("mate", gp.cxOnePoint)
+toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
+toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
+
+toolbox.decorate("mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=MAX_DEPTH))
+toolbox.decorate("mutate", gp.staticLimit(key=operator.attrgetter("height"), max_value=MAX_DEPTH))
+
+random.seed(SEED)
+
+pop = toolbox.population(n=POPULATION_SIZE)
+hof = tools.HallOfFame(3)
+
+pop, log = algorithms.eaSimple(pop, toolbox, MUTATION_RATE, CROSSOVER_RATE, MAX_GENERATIONS,
+                               halloffame=hof, verbose=False)
+
+
+print "\nFunction Set: ", get_pset_string(pset)
+print_summary(hof, toolbox, summary)
+write_graph(hof[0], "tree_logic.pdf")
+
+# ##########################################################################################################################################
+# ##########################################################################################################################################
+# ##########################################################################################################################################
+
+
+pset_arth = gp.PrimitiveSet("Arthmatic", 2)
+pset_arth.addPrimitive(operator.add, 2)
+pset_arth.addPrimitive(operator.sub, 2)
+pset_arth.addPrimitive(operator.mul, 2)
+pset_arth.addPrimitive(operator.neg, 1)
+pset_arth.renameArguments(ARG0='a')
+pset_arth.renameArguments(ARG1='b')
+
+# ########################################
+
+pset = pset_arth
+creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMin)
+
+toolbox = base.Toolbox()
+toolbox.register("expr", gp.genHalfAndHalf, pset=pset, min_=1, max_=2)
+toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+toolbox.register("compile", gp.compile, pset=pset)
+
+
+toolbox.register("evaluate", evaluate_individual, points = terminal_set)
+toolbox.register("select", tools.selTournament, tournsize = TOURNAMENT_SIZE)
+toolbox.register("mate", gp.cxOnePoint)
+toolbox.register("expr_mut", gp.genFull, min_=0, max_=2)
+toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
+
+toolbox.decorate("mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=MAX_DEPTH))
+toolbox.decorate("mutate", gp.staticLimit(key=operator.attrgetter("height"), max_value=MAX_DEPTH))
+
+random.seed(SEED)
+
+pop = toolbox.population(n=POPULATION_SIZE)
+hof = tools.HallOfFame(3)
+
+pop, log = algorithms.eaSimple(pop, toolbox, MUTATION_RATE, CROSSOVER_RATE, MAX_GENERATIONS,
+                               halloffame=hof, verbose=False)
+
+
+print "\nFunction Set: ", get_pset_string(pset)
+print_summary(hof, toolbox, summary)
+write_graph(hof[0], "tree_arth.pdf")

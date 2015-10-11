@@ -1,66 +1,68 @@
+import sys
 import numpy as np
 import pandas as pd
-from sklearn.metrics import confusion_matrix
 from sknn.mlp import Classifier, Layer
 
-import sys
-import logging
 
-logging.basicConfig(
-            # format="%(message)s",
-            level=logging.DEBUG,
-            stream=sys.stdout)
+import random
 
-def load_data():
-    dt = pd.read_table("data/xor.dat", header=None, sep=" ")
+def load_data(filename):
+    dt = pd.read_table(filename, header=None, sep=" ")
     X = dt.iloc[:,:-1].as_matrix()
     y = dt.iloc[:, -1].as_matrix()
     return X, y
 
-def load_test():
-    dt = pd.read_table("data/xor_test.dat", header=None, sep=" ")
-    X = dt.iloc[:,:-1].as_matrix()
-    y = dt.iloc[:, -1].as_matrix()
-    return X, y
+def standard(X, y):
 
-def standard():
+    seed = random.randint(0, sys.maxint)
 
-    X_train, y_train = load_test()
-    X_test, y_test = load_test()
+    X_train, y_train = X, y
+    X_test, y_test = X, y
 
     nn = Classifier(
         layers=[
-            Layer("Tanh", units=2),
-            Layer("Rectifier", units=2),
+            Layer("Maxout", units=2, pieces=2),
             Layer("Softmax")],
         learning_rate=0.2,
-        n_iter=500,
-        # n_stable=200,
-        # f_stable=0.001,
-        # valid_size=0.25,
-        verbose=True,
-        debug=True
+        batch_size=1,
+        n_iter=100,
+        random_state=seed,
+        verbose=False,
+        debug=False
         )
 
-    try:
-        nn.fit(X_train, y_train)
-    except KeyboardInterrupt:
-        pass
+    nn.fit(X_train, y_train)
 
-    print "standard 10x10 tanh score: ", nn.score(X_test, y_test)
-    print
-    print confusion_matrix(y_test, nn.predict(X_test))
-    print y_test
-    print nn.predict(X_test).tolist()
-    print nn.predict_proba(X_test).tolist()
-    # print nn.predict(np.array([1,1]))
-    # print nn.predict(np.array([0,0]))
-    # print nn.predict(np.array([1,0]))
-    # print nn.predict(np.array([0,1]))
+    train_score = nn.score(X_train, y_train)
+    test_score = nn.score(X_test, y_test)
+    proba = nn.predict_proba(X_test)
+
+    return train_score, test_score, proba
 
 
-standard()
 
+filename = "data/xor.dat"
+X, y = load_data(filename)
+scores = np.array([])
+mse = np.array([])
+expected = np.array([ [1., 0.], [0., 1.], [0., 1.], [1., 0.] ])
+
+se = 0.
+
+try:
+    for i in range(3):
+        train_score, test_score, proba = standard(X, y)
+        scores = np.append(scores, test_score)
+
+        se = np.sum( (expected[:,0] - proba[:,0])**2 )
+        mse = np.append(mse, se)
+        print "training score ", train_score, " testing score ", test_score, " squared error: ", se
+
+except KeyboardInterrupt:
+    pass
+
+
+print "mean: ", np.mean(scores), " std: ", np.std(scores), " mse: ", np.mean(mse), " std: ", np.std(mse)
 
 
 

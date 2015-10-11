@@ -40,7 +40,8 @@ def convolution(filename):
         layers=[
             Convolution("Rectifier", channels=5, kernel_shape=(3,3)),
             # Convolution("Rectifier", channels=5, kernel_shape=(3,3)),
-            # Layer("Tanh", units=10),
+            Layer("Maxout", units=2, pieces=2),
+            Layer("Tanh", units=10),
             Layer("Softmax")],
         learning_rate=0.002,
         n_iter=50,
