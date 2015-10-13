@@ -17,6 +17,19 @@ from deap import gp
 
 
 
+
+INTERATIONS = 30
+
+MAX_DEPTH       = 4
+MAX_GENERATIONS = 200
+POPULATION_SIZE = 100
+MUTATION_RATE   = 0.25
+CROSSOVER_RATE  = 0.90
+TOURNAMENT_SIZE = 10
+TERMINAL_SET    = np.linspace(-10,10,100)
+
+
+
 def print_graph(X, hof):
     colours = ['r','b','m','c','y']
     y = eval_all(X)
@@ -56,7 +69,7 @@ def get_mse(ind, toolbox):
     evaluated = 0.
     expected  = 0.
 
-    for (x) in TERMINAL_SET:
+    for (x) in np.linspace(-10,10,500):
         evaluated = func(x)
         expected = regression_function(x)
         # print "evaluated: ", evaluated, " expected ", expected, " x ", x
@@ -111,11 +124,25 @@ def regression_function(a):
 
 
 def evaluate_individual(individual, points):
-    # Transform the tree expression in a callable function
+    score = 0.
+    # get a callable function
     func = toolbox.compile(expr=individual)
 
-    sqerrors = ((func(x) - regression_function(x))**2 for x in points)
-    score = math.fsum(sqerrors) / len(points)
+    # find the squared errors
+
+    results = np.array([])
+    points = np.random.uniform(-10,10,200)
+    for x in points:
+        evaluated = func(x)
+        expected = regression_function(x)
+        results = np.append(results, (evaluated-expected)**2 )
+
+    mae = np.mean(results)
+
+    node_count = len(individual)
+
+    score = mae
+    score = ( node_count * 0.05 ) + mae
 
     return score,
 
@@ -140,16 +167,6 @@ def safe_sqrt(a):
     return math.sqrt( abs(a) )
 
 
-INTERATIONS = 30
-
-MAX_DEPTH       = 4
-MAX_GENERATIONS = 500
-POPULATION_SIZE = 200
-MUTATION_RATE   = 0.50
-CROSSOVER_RATE  = 0.90
-TOURNAMENT_SIZE = 5
-TERMINAL_SET    = np.linspace(-20,20,200)
-
 pset = gp.PrimitiveSet("MAIN", 1)
 pset.addPrimitive(operator.add, 2)
 pset.addPrimitive(operator.sub, 2)
@@ -158,8 +175,8 @@ pset.addPrimitive(operator.lt, 2)
 pset.addPrimitive(operator.gt, 2)
 pset.addPrimitive(operator.eq, 2)
 pset.addPrimitive(operator.neg, 1)
-# pset.addPrimitive(math.cos, 1)
-# pset.addPrimitive(math.sin, 1)
+pset.addPrimitive(math.cos, 1)
+pset.addPrimitive(math.sin, 1)
 pset.addPrimitive(safe_exp, 1)
 pset.addPrimitive(safe_sqrt, 1)
 pset.addEphemeralConstant("int10-10",lambda: random.randint(0, 20))

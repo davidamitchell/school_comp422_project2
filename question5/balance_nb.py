@@ -16,6 +16,7 @@ def load_data(filename):
     y = dt.iloc[:, -1]
     return X, y
 
+
 def safe_div(a,b):
     r = 0.
     if b != 0.:
@@ -46,8 +47,6 @@ def eval_func(chromosome):
     return score
 
 
-gnb = GaussianNB()
-X_all, y = load_data('data/balance.data')
 #
 # genome = GTree.GTreeGP()
 # print genome.getParam('tournamentPool')
@@ -67,24 +66,21 @@ X_all, y = load_data('data/balance.data')
 #
 #
 
+
+X_all, y = load_data('data/balance.data')
 X = X_all.as_matrix()
-from sklearn.cross_validation import KFold
-kf = KFold(len(X), n_folds=10, shuffle=False, random_state=None)
+kf = cross_validation.KFold(len(X), n_folds=10, shuffle=False, random_state=None)
+
+gnb = GaussianNB()
 scores = np.array([])
 for k, (train, test) in enumerate(kf):
-    # print "xall len: ", len(X), " y len ", len(y), "train: ", train
+
     gnb.fit(X[train], y[train])
     scores = np.append(scores, gnb.score(X[test], y[test]))
 
-print scores
+# print scores
 print np.mean(scores)
 
-X, y = load_data('data/balance.data')
-scores = cross_validation.cross_val_score( gnb, X, y, cv=10)
-
-print 'X1'
-print scores
-print np.mean(scores)
 
 
 # ga(freq_stats=10)
@@ -106,6 +102,41 @@ print np.mean(scores)
 # scores_all = cross_validation.cross_val_score( gnb, X_all, y, cv=10)
 # print 'GP: ', np.mean(scores), 'All features: ', np.mean(scores_all)
 
+#   for each fold
+#       split training/test
+#       using the training data
+#       find a constructed feature
+#           using GP
+#           eval function is: a kfold validation across the above training
+#
+#       build training / test set using feature
+#       preform the classification using constructed feature
+#       evaluate performance
+#
+
+
+
+
+
+
+
+
+
+
+# perhaps final validation
+# X, y = load_data('data/balance.data')
+# scores = cross_validation.cross_val_score( gnb, X, y, cv=10)
+#
+# print 'X1'
+# print scores
+# print np.mean(scores)
+
+# for each class
+#  get data for that class
+#  split
+# use GP to find the best combination of features
+#
+#
 
 
 #
