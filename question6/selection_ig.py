@@ -9,7 +9,6 @@ from pyevolve import Consts
 import numpy as np
 import math
 import pylab
-from sklearn.cross_validation import KFold
 
 
 def load_data():
@@ -30,7 +29,7 @@ X_all, y_all = load_data()
 X = X_all.as_matrix()
 y = y_all.as_matrix()
 
-kf = KFold(len(X), n_folds=10, shuffle=False, random_state=None)
+kf = cross_validation.StratifiedKFold(y, n_folds=10)
 
 scores = np.array([])
 for k, (train, test) in enumerate(kf):
@@ -43,8 +42,8 @@ print np.mean(scores)
 
 
 gnb = GaussianNB()
-X = X_all.as_matrix()
-y = y_all.as_matrix()
+# X = X_all.as_matrix()
+# y = y_all.as_matrix()
 gnb.fit(X, y)
 
 # kf = KFold(len(X), n_folds=10, shuffle=False, random_state=None)
