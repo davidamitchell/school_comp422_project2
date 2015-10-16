@@ -9,8 +9,32 @@ import numpy as np
 import math
 import pylab
 
-LOWER_BOUND = -30.0
-UPPER_BOUND =  30.0
+import itertools
+
+LOWER_BOUND  = -30.0
+UPPER_BOUND  =  30.0
+MIN_HAM_DIST =  0.01
+
+def terminator(population, num_generations, num_evaluations, args):
+    min_ham_dist = MIN_HAM_DIST
+
+    ham_dist = []
+    for x, y in itertools.combinations(population, 2):
+        ham_dist.append(sum(a != b for a, b in zip(x.candidate, y.candidate)))
+
+    avg_ham_dist = np.mean(ham_dist)
+    stop = avg_ham_dist < min_ham_dist
+    avg_fit = 0.
+    if num_evaluations % 2000 == 0:
+        avg_fit = np.mean( [o.fitness for o in population] )
+        print(avg_ham_dist, "fitness: ", avg_fit )
+        stop = avg_fit < 5.0
+
+    if stop:
+        print("stoping early at generation: ", num_generations, " evaluation: ", num_evaluations, " ham dist: ", avg_ham_dist, " fitness: ", avg_fit)
+
+    return stop
+
 
 def generator_20(random, args):
     dim = 20
@@ -80,7 +104,7 @@ class GriewankPSO :
 
         ea = inspyred.swarm.PSO(prng)
 
-        ea.terminator = inspyred.ec.terminators.evaluation_termination
+        ea.terminator = terminator
         if self.TOPOLOGY == 'star':
             ea.topology = inspyred.swarm.topologies.star_topology
         else:
@@ -105,15 +129,16 @@ class GriewankPSO :
         return best, best.fitness
 
 
+
 class RosenbrockPSO :
 
-    POP_SIZE          = 100
-    MAX_EVALUATIONS   = 50000
+    POP_SIZE          = 50
+    MAX_GENERATIONS   = 2000
     INERTIA           = 0.5
     CONGNITIVE_RATE   = 1.0
-    SOCIAL_RATE       = 1.1
+    SOCIAL_RATE       = 1.3
     TOPOLOGY          = 'star'
-    NEIGHBORHOOD_SIZE = 10
+    NEIGHBORHOOD_SIZE = 5
 
 
     @classmethod
@@ -123,7 +148,7 @@ class RosenbrockPSO :
     @classmethod
     def structure(self):
         struc  = self.asstring() + " structure:"
-        struc += "\nPopulation size: " + str(self.POP_SIZE) + " Number of evaluations: " + str(self.MAX_EVALUATIONS)
+        struc += "\nPopulation size: " + str(self.POP_SIZE) + " Number of generations: " + str(self.MAX_GENERATIONS)
         struc += "\nCongnitive rate: " + str(self.CONGNITIVE_RATE) + " Social rate: " + str(self.SOCIAL_RATE)
         struc += "\nInertia: " + str(self.INERTIA)
         struc += "\nTopology: " + str(self.TOPOLOGY)
@@ -157,13 +182,11 @@ class RosenbrockPSO :
 
     @classmethod
     def optimise(self, generator):
-        problem = inspyred.benchmarks.Rosenbrock(30)
         prng = random.Random()
         prng.seed(random.randint(0, sys.maxint))
-
         ea = inspyred.swarm.PSO(prng)
-
-        ea.terminator = inspyred.ec.terminators.evaluation_termination
+        # ea.terminator = inspyred.ec.terminators.evaluation_termination
+        ea.terminator = terminator
         if self.TOPOLOGY == 'star':
             ea.topology = inspyred.swarm.topologies.star_topology
         else:
@@ -173,7 +196,7 @@ class RosenbrockPSO :
                               evaluator         = self.evaluation,
                               bounder           = inspyred.ec.Bounder(LOWER_BOUND, UPPER_BOUND),
                               pop_size          = self.POP_SIZE,
-                              max_evaluations   = self.MAX_EVALUATIONS,
+                              max_generations   = self.MAX_GENERATIONS,
                               congnitive_rate   = self.CONGNITIVE_RATE,
                               social_rate       = self.SOCIAL_RATE,
                               maximize          = False,
@@ -184,7 +207,6 @@ class RosenbrockPSO :
         #
         best = max(final_pop)
 
-        # print('Best Solution rosenbrock: \n{0}'.format(str(best)))
         return best, best.fitness
 
 
@@ -197,21 +219,24 @@ def run(interations, klass, generator):
         for i in range(interations):
             solution, fitness = klass.optimise(generator)
             scores = np.append(scores, fitness)
-            # print('fitness: ', fitness)
+            print('fitness: ', fitness)
 
     except KeyboardInterrupt:
         pass
 
+    print("===============================================================================")
     print("%-6s %2.5f %-5s %2.5f" % ('mean: ', np.mean(scores), ' std: ', np.std(scores)) )
+    print("===============================================================================")
+    print("")
 
 
 LOOPCOUNT = 10
 print('')
 print('='*80)
 print(RosenbrockPSO.structure())
-# print('')
-# print(GriewankPSO.structure())
-# print('')
+print('')
+print(GriewankPSO.structure())
+print('')
 
 
 print("Running for ", LOOPCOUNT, " interations")
