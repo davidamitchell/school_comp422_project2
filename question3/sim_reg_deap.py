@@ -26,28 +26,27 @@ POPULATION_SIZE = 100
 MUTATION_RATE   = 0.25
 CROSSOVER_RATE  = 0.90
 TOURNAMENT_SIZE = 10
-TERMINAL_SET    = np.linspace(-10,10,100)
+TERMINAL_SET    = np.linspace(-10,10,200)
 
 
 
-def print_graph(X, hof):
+def print_graph(X, hof, toolbox):
     colours = ['r','b','m','c','y']
     y = eval_all(X)
 
-    pylab.plot(X,Y,'g',linewidth=2.0)
+    pylab.plot(X,y,'g',linewidth=2.0)
 
     for c, ind in enumerate(hof):
-
+        print str(ind)
         func = toolbox.compile(expr=ind)
-
         results   = np.array([])
         evaluated = 0.
         expected  = 0.
 
         z = eval_gp(X, func)
-        pylab.plot(X, z, colours[c] ,linewidth=1.0)
+        pylab.plot(X, z, colours[c] ,linewidth=2.0)
 
-    pylab.title(summary)
+    pylab.title("")
     pylab.subplots_adjust(top=0.8)
 
     pylab.show()
@@ -61,6 +60,20 @@ def get_pset_string(pset):
           function_set = np.append(function_set, value.format('a','b'))
 
     return str( np.array2string(function_set, max_line_width=np.inf) )
+
+def get_guess():
+
+    results   = np.array([])
+    evaluated = 0.
+    expected  = 0.
+
+    for (x) in np.linspace(-10,10,500):
+        evaluated = guess(x)
+        expected = regression_function(x)
+        # print "evaluated: ", evaluated, " expected ", expected, " x ", x
+        results = np.append(results, (evaluated-expected)**2 )
+
+    return np.mean(results)
 
 def get_mse(ind, toolbox):
     func = toolbox.compile(expr=ind)
@@ -88,7 +101,7 @@ def print_summary(hof, toolbox):
 
 def print_header():
     header  = ""
-    header += "Terminal Set: np.linspace(-20,20,100)"
+    header += "Terminal Set: np.linspace(-10,10,100)"
 
     header += "\nPopulation Size: " + str(POPULATION_SIZE)
     header += "   Max Generations: " + str(MAX_GENERATIONS)
@@ -107,12 +120,26 @@ def eval_gp(X, func):
         results = np.append(results, evaluated)
     return results
 
+def eval_gues(X):
+    results = np.array([])
+    for x in X:
+        evaluated = guess(x)
+        results = np.append(results, evaluated)
+    return results
+
 def eval_all(x):
     results = np.array([])
     for val in x:
         expected = regression_function(val)
         results = np.append(results, expected)
     return results
+
+def guess(a):
+    fa = 0.0
+
+    fa = safe_sqrt( safe_exp( (0.0 - 1.2) * a ) ) - 0.2
+
+    return fa
 
 def regression_function(a):
     fa = 0.0
@@ -146,15 +173,6 @@ def evaluate_individual(individual, points):
 
     return score,
 
-
-
-# Define new functions
-def safe_div(a,b):
-    r = 0.
-    if b != 0.:
-        r = a / b
-
-    return r
 
 def safe_exp(a):
     safe_a = 50
@@ -200,26 +218,17 @@ toolbox.decorate("mutate", gp.staticLimit(key=operator.attrgetter("height"), max
 
 
 
+print "Mse of guess: ", get_guess()
+print ''
 
 
 print "\nFunction Set: ", get_pset_string(pset)
 print_header()
 print ''
-#
-#
-# SEED = random.randint(0, sys.maxint)
-# # SEED = 540263078815542890
-# random.seed(random.randint(0, sys.maxint))
-#
-# pop = toolbox.population(n=POPULATION_SIZE)
-# hof = tools.HallOfFame(3)
-#
-# pop, log = algorithms.eaSimple(pop, toolbox, MUTATION_RATE, CROSSOVER_RATE, MAX_GENERATIONS,
-#                                halloffame=hof, verbose=False)
-#
-# print_summary(hof, toolbox)
 
 scores = np.array([])
+scores_with_expression = np.array([])
+temp_dict = {}
 
 try:
     for i in range(INTERATIONS):
@@ -231,6 +240,9 @@ try:
         # print_summary(hof, toolbox)
         mse = get_mse(hof[0], toolbox)
         scores = np.append(scores, mse)
+
+        temp_dict = {"score": mse, "best": hof[0]}
+        scores_with_expression = np.append(scores_with_expression, temp_dict)
         print 'mse ', mse, ' exp: ', hof[0]
 
 except KeyboardInterrupt:
@@ -240,54 +252,23 @@ except KeyboardInterrupt:
 
 print("%-6s %2.5f %-5s %2.5f" % ('mean: ', np.mean(scores), ' std: ', np.std(scores)) )
 
+sorted_findings = sorted(scores_with_expression, key=lambda a: a['score'])
 
+hof_hof = []
 
-# write_graph(hof[0], "tree_logic.pdf")
-
-
-
-
-
-
-
-
-
-
+X = np.linspace(-10,10,500)
+print "the three best expressions in order: "
+for i in range(3):
+    hof_hof.append(sorted_findings[i]['best'])
+    print "mse: ", sorted_findings[i]['score'], "expression: ", sorted_findings[i]['best']
+    print '----------'
 
 
 
+X = np.linspace(-10,10,500)
+print_graph(X, hof_hof, toolbox)
 
-X = np.linspace(-20,20,500)
-#
-# for x in X:
-#     evaluated = func(x)
-#     expected = regression_function(x)
-#     # print "evaluated: ", evaluated, " expected ", expected, " x ", x
-#     results = np.append(results, (evaluated-expected)**2 )
-#
-# mse = np.mean(results)
-# print "expression: ", ind, "mean squared error: ", mse
-
-# if c == 0:
-#     header += "\nBest MSE: " + str(mse)
-#     summary += "\n "
 
 
 
 #
-#
-# nodes, edges, labels = gp.graph(ind)
-#
-# ### Graphviz Section ###
-# import pygraphviz as pgv
-#
-# g = pgv.AGraph()
-# g.add_nodes_from(nodes)
-# g.add_edges_from(edges)
-# g.layout(prog="dot")
-#
-# for i in nodes:
-#     n = g.get_node(i)
-#     n.attr["label"] = labels[i]
-#
-# g.draw("tree.pdf")
